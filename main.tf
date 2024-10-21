@@ -1,7 +1,13 @@
 locals {
   default_vm_service_account = var.vm_service_account
-  vm_machines                = jsondecode(file("${path.module}/vm-machines.json"))
+  vm_machines                = var.machines_list
   vm_zone                    = "${var.region_name}-a"
+image_types = {
+    debian-11               = "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-11-bullseye-v20240312"
+    debian-12               = "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-12-bookworm-v20240312"
+    ubuntu-minimal-2004-lts = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-minimal-2004-focal-v20240403"
+    ubuntu-minimal-2204-lts = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-minimal-2204-jammy-v20240318"
+  }
 }
 
 resource "google_compute_instance" "default" {
@@ -15,7 +21,7 @@ resource "google_compute_instance" "default" {
   boot_disk {
     initialize_params {
       size  = local.vm_machines[count.index].boot_disk_size
-      image = local.vm_machines[count.index].image
+      image = local.image_types[local.vm_machines[count.index].image]
     }
   }
   labels = {
